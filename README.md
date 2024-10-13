@@ -32,7 +32,7 @@ Creating conda environment and installing all the dependencies as follows:
 
 ```
 # create conda env
-conda create --name ld_detr python=3.8
+conda create --name ld_detr python=3.7
 # activate env
 conda actiavte ld_detr
 # install pytorch
