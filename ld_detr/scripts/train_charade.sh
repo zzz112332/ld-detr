@@ -11,7 +11,7 @@ eval_path=data/charades/charades_sta_val_tvr_format.jsonl
 eval_split_name=val
 
 ######## setup video+text features
-feat_root=~/PycharmProjects/zpc_projects/features/charades
+feat_root=../features/charades
 
 # video features
 v_feat_dim=0
