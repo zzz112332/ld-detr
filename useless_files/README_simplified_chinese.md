@@ -32,7 +32,7 @@ ld-detr
 
 ```
 # 创建 conda 环境
-conda create --name ld_detr python=3.8
+conda create --name ld_detr python=3.7
 # 激活环境
 conda actiavte ld_detr
 # 安装 pytorch
