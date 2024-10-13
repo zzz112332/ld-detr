@@ -433,7 +433,7 @@ class LoopDecoder(nn.Module):
         super().__init__()
         self.num_decoder_loops = num_decoder_loops
 
-        # Transformer Dncoder
+        # Transformer Decoder
         self.transformer_decoder = TransformerDecoder(
             TransformerDecoderLayer(
                 hidden_dim,
@@ -461,14 +461,14 @@ class LoopDecoder(nn.Module):
     def forward(self, tgt, memory, src_vid_mask, pos_vid, refpoint_embed):
         """
         Inputs:
-            tgt:            an zero metrix, extract multimodal features (reference_point_#, bs, d)
-            memory:         multimodal features                         (L, bs, d)
-            src_vid_mask:   video features' mask                        (bs, L)
-            pos_vid:        video features' position embeddings         (bs, L, d)
-            refpoint_embed: extract multimodal feature                  (reference_point_#, bs, 2)
+            tgt:            a zero matrix, extract multimodal features (reference_point_#, bs, d)
+            memory:         multimodal features                        (L, bs, d)
+            src_vid_mask:   video features' mask                       (bs, L)
+            pos_vid:        video features' position embeddings        (bs, L, d)
+            refpoint_embed: extract multimodal feature                 (reference_point_#, bs, 2)
         Return:
-            hs:             encoded multimodal features                 (decoder_layer_#, bs, reference_point_#, d)
-            reference:      encoded refpoint_embed                      (decoder_layer_#, bs, reference_point_#, 2)
+            hs:             encoded multimodal features                (decoder_layer_#, bs, reference_point_#, d)
+            reference:      encoded refpoint_embed                     (decoder_layer_#, bs, reference_point_#, 2)
         """
 
         pos_vid = pos_vid.permute(1, 0, 2)  # (L, bs, d)
