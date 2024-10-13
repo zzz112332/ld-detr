@@ -289,6 +289,7 @@ class ConvolutionalBlock(nn.Module):
         return out
 
 
+# Convolutional Fuser
 class ConvolutionalFuser(nn.Module):
     def __init__(
         self,
