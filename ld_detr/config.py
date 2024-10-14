@@ -60,7 +60,7 @@ class BaseOptions(object):
                             help="if --resume_all, load optimizer/scheduler/epoch as well")
         parser.add_argument("--start_epoch", type=int, default=None,
                             help="if None, will be set automatically when using --resume_all")
-        parser.add_argument("--eval_epoch", type=int, default=1,
+        parser.add_argument("--eval_epoch", type=int, default=5,
                             help="inference epoch")
 
         # Data config
