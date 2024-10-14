@@ -35,7 +35,6 @@ else
 fi
 
 #### training
-n_epoch=250
 distillation_coefficient=0.7
 max_v_l=-1
 lw_saliency=4
@@ -54,7 +53,6 @@ PYTHONPATH=$PYTHONPATH:. python ld_detr/train.py \
 --results_root ${results_root} \
 --exp_id ${exp_id} \
 --max_v_l ${max_v_l} \
---n_epoch ${n_epoch} \
 --lw_saliency ${lw_saliency} \
 --distillation_coefficient ${distillation_coefficient} \
 --seed ${seed} \
