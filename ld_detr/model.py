@@ -129,16 +129,16 @@ class LD_DETR(nn.Module):
             src_txt_m = self.momentum_text_encoder(src_txt_copy)  # (bs, N, d)
 
         # distill align
-        loss_align = self.distill_align(
+        loss_align, loss_sim = self.distill_align(
             F.normalize(src_vid.mean(1), dim=-1),
             F.normalize(src_txt.mean(1), dim=-1),
-            F.normalize(src_vid_m.mean(1), dim=-1),
-            F.normalize(src_txt_m.mean(1), dim=-1),
+            F.normalize(src_vid_m.mean(1), dim=-1).detach(),
+            F.normalize(src_txt_m.mean(1), dim=-1).detach(),
             epoch_i=epoch_i,
             batch_idx=batch_idx,
             train_loader_length=train_loader_length,
             is_training=is_training,
-        )  # (1)
+        )  # (1), (1)
 
         # positional embedding
         pos_vid = self.position_embed(src_vid, src_vid_mask)  # (bs, L, d)
@@ -169,6 +169,7 @@ class LD_DETR(nn.Module):
         # losses
         out = {}
         out["loss_align"] = loss_align
+        out["loss_sim"] = loss_sim
         out["video_mask"] = src_vid_mask
         out["pred_logits"] = pred_logits  # (bs, reference_point_#, 2)
         out["pred_spans"] = pred_spans  # (bs, reference_point_#, 2)
@@ -391,6 +392,12 @@ class SetCriterion(nn.Module):
         losses = {"loss_align": loss}
         return losses
 
+    def loss_sim(self, outputs, targets, indices, log=True):
+        """multimodal similar loss"""
+        loss = outputs["loss_sim"]
+        losses = {"loss_sim": loss}
+        return losses
+
     def _get_src_permutation_idx(self, indices):
         # permute predictions following indices
         batch_idx = torch.cat(
@@ -410,6 +417,7 @@ class SetCriterion(nn.Module):
             "spans": self.loss_spans,
             "labels": self.loss_labels,
             "align": self.loss_align,
+            "sim": self.loss_sim,
             "saliency": self.loss_saliency,
         }
         assert loss in loss_map, f"do you really want to compute {loss} loss?"
@@ -458,6 +466,7 @@ class SetCriterion(nn.Module):
                 for loss in losses_target:
                     if loss in [
                             "align",
+                            "sim",
                             "saliency",
                     ]:  # skip as it is only in the top layer
                         continue
@@ -518,6 +527,7 @@ def build_model(args):
         "loss_giou": args.giou_loss_coef,
         "loss_label": args.label_loss_coef,
         "loss_align": args.align_loss_coef,
+        "loss_sim": args.sim_loss_coef,
         "loss_saliency": args.lw_saliency,
     }
     # TODO this is a hack
@@ -530,7 +540,7 @@ def build_model(args):
             })
         weight_dict.update(aux_weight_dict)
 
-    losses = ["spans", "labels", "align", "saliency"]
+    losses = ["spans", "labels", "align", "sim", "saliency"]
 
     # For tvsum dataset
     use_matcher = not (args.dset_name == "tvsum")
