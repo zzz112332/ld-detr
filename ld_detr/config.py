@@ -60,7 +60,7 @@ class BaseOptions(object):
                             help="if --resume_all, load optimizer/scheduler/epoch as well")
         parser.add_argument("--start_epoch", type=int, default=None,
                             help="if None, will be set automatically when using --resume_all")
-        parser.add_argument("--eval_epoch", type=int, default=5,
+        parser.add_argument("--eval_epoch", type=int, default=1,
                             help="inference epoch")
 
         # Data config
@@ -128,6 +128,7 @@ class BaseOptions(object):
         parser.add_argument('--giou_loss_coef', default=1, type=float)
         parser.add_argument('--label_loss_coef', default=4, type=float)
         parser.add_argument('--align_loss_coef', default=0.6, type=float)
+        parser.add_argument('--sim_loss_coef', default=0.6, type=float)
         parser.add_argument('--eos_coef', default=0.1, type=float,
                             help="Relative classification weight of the no-object class")
         parser.add_argument("--contrastive_align_loss_coef", default=0.0, type=float)
