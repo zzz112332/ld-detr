@@ -51,12 +51,11 @@ class DistillAlign(nn.Module):
         self.alpha = alpha
         self.queue_length = queue_length
 
+        # cosine similarity
         self.cos = nn.CosineSimilarity(dim=1)
-        self.f = nn.Linear(hidden_dim, hidden_dim)
+        
+        # prediction mlp
         self.h = nn.Linear(hidden_dim, hidden_dim)
-
-        _reset_parameters(self.f)
-        _reset_parameters(self.h)
 
         # register global features queues and normalize them
         self.register_buffer("vid_queue", torch.randn(hidden_dim,
@@ -68,6 +67,9 @@ class DistillAlign(nn.Module):
 
         # register the pointer
         self.register_buffer("queue_ptr", torch.zeros(1, dtype=torch.long))
+        
+        # initialize parameters with Xavier initialization
+        _reset_parameters(self.h)
 
     def forward(
         self,
@@ -91,6 +93,7 @@ class DistillAlign(nn.Module):
             self.txt_queue: text momentum global features queues  (d, queue_length)
         Return:
             loss_align: multimodal alignment loss                 (1)
+            loss_sim: multimodal similar loss                     (1)
         """
 
         # distillation coefficient warms up
@@ -145,10 +148,11 @@ class DistillAlign(nn.Module):
         if is_training:
             self._dequeue_and_enqueue(src_vid_cls_m, src_txt_cls_m)
         
-        # src_vid_cls = F.relu(self.linear(src_vid_cls), inplace=True)
+        # # predictions
         p_vid_cls = self.h(F.relu(src_vid_cls, inplace=False))
         p_txt_cls = self.h(F.relu(src_txt_cls, inplace=False))
         
+        # negative cosine similarity
         loss_sim = -(self.cos(p_vid_cls, src_txt_cls).mean() + self.cos(p_txt_cls, src_vid_cls).mean()) / 2
 
         return loss_align, loss_sim
