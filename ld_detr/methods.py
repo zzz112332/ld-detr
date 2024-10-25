@@ -51,6 +51,13 @@ class DistillAlign(nn.Module):
         self.alpha = alpha
         self.queue_length = queue_length
 
+        self.cos = nn.CosineSimilarity(dim=1)
+        self.f = nn.Linear(hidden_dim, hidden_dim)
+        self.h = nn.Linear(hidden_dim, hidden_dim)
+
+        _reset_parameters(self.f)
+        _reset_parameters(self.h)
+
         # register global features queues and normalize them
         self.register_buffer("vid_queue", torch.randn(hidden_dim,
                                                       queue_length))
@@ -137,8 +144,14 @@ class DistillAlign(nn.Module):
         # push momentum global features into momentum global features queues
         if is_training:
             self._dequeue_and_enqueue(src_vid_cls_m, src_txt_cls_m)
+        
+        # src_vid_cls = F.relu(self.linear(src_vid_cls), inplace=True)
+        p_vid_cls = self.h(F.relu(src_vid_cls, inplace=False))
+        p_txt_cls = self.h(F.relu(src_txt_cls, inplace=False))
+        
+        loss_sim = -(self.cos(p_vid_cls, src_txt_cls).mean() + self.cos(p_txt_cls, src_vid_cls).mean()) / 2
 
-        return loss_align
+        return loss_align, loss_sim
 
     # push momentum global features into momentum global features queues
     @torch.no_grad()
@@ -461,14 +474,14 @@ class LoopDecoder(nn.Module):
     def forward(self, tgt, memory, src_vid_mask, pos_vid, refpoint_embed):
         """
         Inputs:
-            tgt:            a zero matrix, extract multimodal features (reference_point_#, bs, d)
-            memory:         multimodal features                        (L, bs, d)
-            src_vid_mask:   video features' mask                       (bs, L)
-            pos_vid:        video features' position embeddings        (bs, L, d)
-            refpoint_embed: extract multimodal feature                 (reference_point_#, bs, 2)
+            tgt:            an zero metrix, extract multimodal features (reference_point_#, bs, d)
+            memory:         multimodal features                         (L, bs, d)
+            src_vid_mask:   video features' mask                        (bs, L)
+            pos_vid:        video features' position embeddings         (bs, L, d)
+            refpoint_embed: extract multimodal feature                  (reference_point_#, bs, 2)
         Return:
-            hs:             encoded multimodal features                (decoder_layer_#, bs, reference_point_#, d)
-            reference:      encoded refpoint_embed                     (decoder_layer_#, bs, reference_point_#, 2)
+            hs:             encoded multimodal features                 (decoder_layer_#, bs, reference_point_#, d)
+            reference:      encoded refpoint_embed                      (decoder_layer_#, bs, reference_point_#, 2)
         """
 
         pos_vid = pos_vid.permute(1, 0, 2)  # (L, bs, d)
