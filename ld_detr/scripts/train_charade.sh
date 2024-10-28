@@ -11,7 +11,7 @@ eval_path=data/charades/charades_sta_val_tvr_format.jsonl
 eval_split_name=val
 
 ######## setup video+text features
-feat_root=../features/charades
+feat_root=~/PycharmProjects/zpc_projects/features/charades
 
 # video features
 v_feat_dim=0
@@ -39,6 +39,7 @@ n_epoch=100
 clip_length=1
 num_convolutional_blocks=4
 distillation_coefficient=0.3
+sim_loss_coef=0.4
 lw_saliency=1.5
 max_v_l=-1
 seed=$((RANDOM << 15 | RANDOM))
@@ -61,5 +62,6 @@ PYTHONPATH=$PYTHONPATH:. python ld_detr/train.py \
 --lw_saliency ${lw_saliency} \
 --num_convolutional_blocks ${num_convolutional_blocks} \
 --distillation_coefficient ${distillation_coefficient} \
+--sim_loss_coef ${sim_loss_coef} \
 --seed ${seed} \
 ${@:1}
