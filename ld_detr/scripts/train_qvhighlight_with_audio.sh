@@ -7,8 +7,8 @@ results_root=results_qvhighlight_with_audio
 exp_id=exp
 
 ######## data paths
-train_path=data/highlight_train_release.jsonl
-eval_path=data/highlight_val_release.jsonl
+train_path=data/qvhighlight/highlight_train_release.jsonl
+eval_path=data/qvhighlight/highlight_val_release.jsonl
 eval_split_name=val
 
 ######## setup video+text features
